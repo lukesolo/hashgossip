@@ -5,14 +5,15 @@ import (
 	"encoding/binary"
 	"log"
 	"net"
-	c "hashgossip/consts"
-	"hashgossip/messenger"
-	"hashgossip/models"
-	"hashgossip/storages"
-	"hashgossip/transport"
+	"os"
 
 	"github.com/vmihailenco/msgpack"
-	"os"
+
+	c "github.com/DemonVex/hashgossip/consts"
+	"github.com/DemonVex/hashgossip/messenger"
+	"github.com/DemonVex/hashgossip/models"
+	"github.com/DemonVex/hashgossip/storages"
+	"github.com/DemonVex/hashgossip/transport"
 )
 
 type UdpHandler struct {
@@ -83,7 +84,6 @@ func (u UdpHandler) saveMessage(msg models.Message) bool {
 	}
 	return false
 }
-
 
 func (u UdpHandler) reportHandler(src *net.UDPAddr, body []byte) {
 	var msg models.Message

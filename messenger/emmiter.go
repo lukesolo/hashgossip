@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"hashgossip/models"
+	"github.com/DemonVex/hashgossip/models"
 )
 
 func newRandomMessage(n int) (models.Message, error) {

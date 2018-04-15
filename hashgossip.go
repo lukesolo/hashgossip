@@ -10,12 +10,12 @@ import (
 	"os"
 	"time"
 
-	c "hashgossip/consts"
-	"hashgossip/messenger"
-	m "hashgossip/models"
-	"hashgossip/storages"
-	"hashgossip/transport"
-	"hashgossip/handlers"
+	c "github.com/DemonVex/hashgossip/consts"
+	"github.com/DemonVex/hashgossip/handlers"
+	"github.com/DemonVex/hashgossip/messenger"
+	m "github.com/DemonVex/hashgossip/models"
+	"github.com/DemonVex/hashgossip/storages"
+	"github.com/DemonVex/hashgossip/transport"
 
 	"github.com/BurntSushi/toml"
 )

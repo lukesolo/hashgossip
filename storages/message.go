@@ -3,7 +3,7 @@ package storage
 import (
 	"sync"
 
-	"hashgossip/models"
+	"github.com/DemonVex/hashgossip/models"
 )
 
 type messageStorage struct {

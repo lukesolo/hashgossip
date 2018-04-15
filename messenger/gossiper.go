@@ -1,13 +1,14 @@
 package messenger
 
 import (
-	"hashgossip/consts"
-	"hashgossip/models"
-	"hashgossip/storages"
-	"hashgossip/transport"
+	"log"
 
 	"github.com/vmihailenco/msgpack"
-	"log"
+
+	"github.com/DemonVex/hashgossip/consts"
+	"github.com/DemonVex/hashgossip/models"
+	"github.com/DemonVex/hashgossip/storages"
+	"github.com/DemonVex/hashgossip/transport"
 )
 
 type gossiper struct {

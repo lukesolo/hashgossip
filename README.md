@@ -17,8 +17,9 @@
     InvalidFrequent = 5
 
 ## Быстрый старт
-Предполагается что проект находится в директории `$GOPATH/src`.
-
+    
+    go get github.com/DemonVex/hashgossip
+    
 Сборка бинарника
 
 	make build

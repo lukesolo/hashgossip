@@ -2,9 +2,10 @@ package storage
 
 import (
 	"bytes"
-	"hashgossip/models"
 	"log"
 	"sync"
+
+	"github.com/DemonVex/hashgossip/models"
 )
 
 type PeerStorage interface {
