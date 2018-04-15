@@ -18,10 +18,10 @@ import (
 	"hashgossip/transport"
 
 	"github.com/vmihailenco/msgpack"
+	"github.com/BurntSushi/toml"
 )
 
 const (
-	multicastAddr = "224.0.0.1:9999"
 	prefLen       = 5
 )
 
@@ -35,10 +35,6 @@ var (
 	gossiper       messenger.Gossiper
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func ping(address string, lAddr *net.UDPAddr) {
 	payload := make([]byte, prefLen+2)
 	copy(payload, c.PrefHello)
@@ -51,9 +47,15 @@ func ping(address string, lAddr *net.UDPAddr) {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+	var conf m.Config
+	if _, err := toml.DecodeFile("config.toml", &conf); err != nil {
+		log.Fatal("can't read config file ", err)
+	}
+
 	flag.Parse()
 	if *killerFlag {
-		transport.SendPayloadToUDP(multicastAddr, c.PrefShutdown)
+		transport.SendPayloadToUDP(conf.MulticastAddress, c.PrefShutdown)
 		os.Exit(0)
 	}
 
@@ -66,39 +68,36 @@ func main() {
 
 	udpListener, err := net.ListenUDP("udp4", nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("can't start listen UDP ", err)
 	}
 	defer udpListener.Close()
 	go transport.ServeUDP(udpListener, udpHandler)
 
-	laddr, ok := udpListener.LocalAddr().(*net.UDPAddr)
-	if !ok {
-		log.Fatal(err)
-	}
+	laddr, _ := udpListener.LocalAddr().(*net.UDPAddr)
 
 	if *watcherFlag {
 		payload := make([]byte, prefLen+2)
 		copy(payload, c.PrefMonitoring)
 		binary.LittleEndian.PutUint16(payload[prefLen:], uint16(laddr.Port))
 
-		transport.SendPayloadToUDP(multicastAddr, payload)
+		transport.SendPayloadToUDP(conf.MulticastAddress, payload)
 		time.Sleep(5 * time.Second)
 		os.Exit(0)
 	}
 
 	log.SetPrefix(fmt.Sprintf("[%v]", laddr.Port))
 	peerStorage.Add(m.Peer{IP: GetOutboundIP(), Port: uint16(laddr.Port)})
-	go transport.ServeMulticastUDP(multicastAddr, udpHandler)
+	go transport.ServeMulticastUDP(conf.MulticastAddress, udpHandler)
 
 	for {
-		ping(multicastAddr, laddr)
+		ping(conf.MulticastAddress, laddr)
 		time.Sleep(1 * time.Second)
 		if !peerStorage.IsEmpty() {
 			break
 		}
 	}
 
-	go messenger.StartEmmitingMessages(gossiper, rand.Intn(10), 0)
+	go messenger.StartEmmitingMessages(gossiper, rand.Intn(conf.LimitMessages), conf.InvalidFrequent)
 
 	select {}
 }
@@ -125,7 +124,7 @@ func messageHandler(src *net.UDPAddr, body []byte) {
 	var msg m.Message
 	err := msgpack.Unmarshal(body, &msg)
 	if err != nil {
-		log.Println("unmarshal error ", err)
+		log.Println("message unmarshal error ", err)
 		return
 	}
 	log.Printf("msg %+v...", msg.GetPayload()[0:5])
@@ -144,7 +143,7 @@ func welcomeHandler(src *net.UDPAddr, body []byte) {
 	var wp m.WelcomePack
 	err := msgpack.Unmarshal(body, &wp)
 	if err != nil {
-		log.Println("unmarshal error ", err)
+		log.Println("welcome unmarshal error ", err)
 		return
 	}
 
@@ -163,7 +162,7 @@ func reportHandler(src *net.UDPAddr, body []byte) {
 	var msg m.Message
 	err := msgpack.Unmarshal(body, &msg)
 	if err != nil {
-		log.Println("unmarshal error ", err)
+		log.Println("report unmarshal error ", err)
 		return
 	}
 	log.Printf("%+v", msg)
@@ -175,7 +174,7 @@ func monitoringHandler(src *net.UDPAddr, body []byte) {
 
 	mb, err := msgpack.Marshal(messageStorage.Get())
 	if err != nil {
-		log.Println(err)
+		log.Println("monitoring marshal error ", err)
 		return
 	}
 	payload := append(c.PrefReport, mb...)
@@ -189,7 +188,7 @@ func helloHandler(src *net.UDPAddr, body []byte) {
 
 	wb, err := msgpack.Marshal(m.WelcomePack{PeerList: peerStorage.List(), Msg: messageStorage.Get()})
 	if err != nil {
-		log.Println(err)
+		log.Println("hello marshal error ",err)
 		return
 	}
 	payload := append(c.PrefWelcome, wb...)
@@ -200,7 +199,7 @@ func helloHandler(src *net.UDPAddr, body []byte) {
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp4", "8.8.8.8:80")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("can't get outbound IP ", err)
 	}
 	defer conn.Close()
 

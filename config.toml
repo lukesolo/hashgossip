@@ -1,0 +1,3 @@
+MulticastAddress = "224.0.0.1:9999"
+LimitMessages = 10
+InvalidFrequent = 0.0
