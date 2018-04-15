@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"log"
 	"sync"
 
 	"hashgossip/models"
@@ -27,7 +26,6 @@ func (ms *messageStorage) Set(m models.Message) bool {
 
 	if ms.msg.Compare(m) < 0 {
 		ms.msg = m
-		log.Printf("new message was set %+v", ms.msg.GetPayload()[0:5])
 		return true
 	}
 	return false

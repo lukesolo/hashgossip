@@ -28,4 +28,5 @@ func StartEmmitingMessages(g Gossiper, n int, invalidFreq float32) {
 
 		g.SendMessage(msg)
 	}
+	log.Println("Finish emmiting")
 }

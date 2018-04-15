@@ -5,8 +5,6 @@ import (
 	"encoding/binary"
 	"log"
 	"net"
-	"os"
-
 	c "hashgossip/consts"
 	"hashgossip/messenger"
 	"hashgossip/models"
@@ -14,6 +12,7 @@ import (
 	"hashgossip/transport"
 
 	"github.com/vmihailenco/msgpack"
+	"os"
 )
 
 type UdpHandler struct {
@@ -35,7 +34,7 @@ func (u UdpHandler) Handler(src *net.UDPAddr, n int, buf []byte) {
 	case bytes.Equal(header, c.PrefMonitoring):
 		u.monitoringHandler(src, body)
 	case bytes.Equal(header, c.PrefShutdown):
-		os.Exit(2)
+		u.shutdownHandler(src, body)
 	case bytes.Equal(header, c.PrefHello):
 		u.helloHandler(src, body)
 	}
@@ -50,13 +49,8 @@ func (u UdpHandler) messageHandler(src *net.UDPAddr, body []byte) {
 	}
 	log.Printf("msg %+v...", msg.GetPayload()[0:5])
 
-	if msg.IsValid() {
-		stored := u.MessageStorage.Set(msg)
-		if u.HashStorage.Add(msg.GetHash()) && stored {
-			u.Gossiper.SendMessage(msg)
-		}
-	} else {
-		log.Println("Invalid message")
+	if u.saveMessage(msg) {
+		u.Gossiper.SendMessage(msg)
 	}
 }
 
@@ -71,13 +65,25 @@ func (u UdpHandler) welcomeHandler(src *net.UDPAddr, body []byte) {
 	u.PeerStorage.Merge(wp.PeerList)
 
 	if !wp.Msg.IsEmpty() {
-		if wp.Msg.IsValid() {
-			u.MessageStorage.Set(wp.Msg)
-		} else {
-			log.Println("Invalid message")
-		}
+		log.Printf("welcome msg %+v...", wp.Msg.GetPayload()[0:5])
+		u.saveMessage(wp.Msg)
 	}
 }
+
+func (u UdpHandler) saveMessage(msg models.Message) bool {
+	if msg.IsValid() {
+		stored := u.MessageStorage.Set(msg)
+		if stored {
+			log.Printf("new message was set %+v", msg.GetPayload()[0:5])
+		}
+		newHash := u.HashStorage.Add(msg.GetHash())
+		return stored && newHash
+	} else {
+		log.Println("Invalid message")
+	}
+	return false
+}
+
 
 func (u UdpHandler) reportHandler(src *net.UDPAddr, body []byte) {
 	var msg models.Message
@@ -114,4 +120,9 @@ func (u UdpHandler) helloHandler(src *net.UDPAddr, body []byte) {
 	}
 	payload := append(c.PrefWelcome, wb...)
 	transport.SendPayloadToUDP(address, payload)
+}
+
+func (u UdpHandler) shutdownHandler(src *net.UDPAddr, body []byte) {
+	log.Println("got shutdown signal")
+	os.Exit(2)
 }
