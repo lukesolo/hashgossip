@@ -10,7 +10,7 @@ help:
 	@echo "clean          - send kill and rm logs"
 
 build:
-	go build
+	go build hashgossip.go
 
 run:
 	for i in {1..${N}}; do ./hashgossip 1>$(LOGS_DIR)/$$i.log 2>&1 & done

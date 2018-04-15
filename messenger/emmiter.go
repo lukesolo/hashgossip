@@ -15,7 +15,7 @@ func newRandomMessage(n int) (models.Message, error) {
 	return models.NewMessage(msgPayload)
 }
 
-func StartEmmitingMessages(g Gossiper, n int, invalidFreq float32) {
+func StartEmmitingMessages(g Gossiper, n int, invalidFreq int) {
 	for n > 0 {
 		time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
 		n -= 1
@@ -24,6 +24,10 @@ func StartEmmitingMessages(g Gossiper, n int, invalidFreq float32) {
 		if err != nil {
 			log.Println(err)
 			continue
+		}
+
+		if rand.Intn(100) < invalidFreq {
+			rand.Read(msg.Payload)
 		}
 
 		g.SendMessage(msg)

@@ -15,9 +15,9 @@ import (
 	m "hashgossip/models"
 	"hashgossip/storages"
 	"hashgossip/transport"
+	"hashgossip/handlers"
 
 	"github.com/BurntSushi/toml"
-	"hashgossip/handlers"
 )
 
 var (
