@@ -8,3 +8,7 @@ var (
 	PrefWelcome    = []byte("WELCO")
 	PrefReport     = []byte("REPOR")
 )
+
+const (
+	PrefLen = 5
+)
