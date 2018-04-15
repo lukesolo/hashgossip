@@ -1,10 +1,11 @@
 package messenger
 
 import (
-	"hashgossip/models"
 	"log"
 	"math/rand"
 	"time"
+
+	"hashgossip/models"
 )
 
 func newRandomMessage(n int) (models.Message, error) {
