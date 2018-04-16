@@ -43,6 +43,8 @@ func (p *peerStorage) unsafeAdd(peer models.Peer) {
 }
 
 func (p *peerStorage) IsIn(peer models.Peer) bool {
+	// поиск имеет сложность O(n)
+
 	for _, v := range p.list {
 		if v.Port == peer.Port && bytes.Equal(v.IP, peer.IP) {
 			return true

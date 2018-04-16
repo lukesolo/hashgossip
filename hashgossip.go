@@ -75,6 +75,11 @@ func main() {
 	go transport.ServeMulticastUDP(conf.MulticastAddress, udpHandler.Handler)
 
 	for {
+		// строится сеть узлов каждый с каждым
+		// при этом каждый узел отвечает списком всех известных ему пиров,
+		// в то же время сложность слияния знакомых пиров и новых равна O(m*n),
+		// что в итоге приводит подключение нового пира в сеть очень тяжёлой операцией
+		// при большом количестве пиров
 		ping(conf.MulticastAddress, laddr)
 		time.Sleep(1 * time.Second)
 		if !peerStorage.IsEmpty() {

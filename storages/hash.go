@@ -32,6 +32,8 @@ func (hs *hashStorage) Add(h []byte) bool {
 }
 
 func (hs *hashStorage) IsIn(checkHash []byte) bool {
+	// сложность поиска O(n)
+
 	for _, h := range hs.hashes {
 		if bytes.Equal(h, checkHash) {
 			return true

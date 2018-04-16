@@ -51,6 +51,8 @@ func (u UdpHandler) messageHandler(src *net.UDPAddr, body []byte) {
 	log.Printf("msg %+v...", msg.GetPayload()[0:5])
 
 	if u.saveMessage(msg) {
+		// после сохранения сообщения с большим хэшем рассылаем его всем известным пирам,
+		// что может привести к тому что некоторые получат множество копий одного и тоге же сообщения
 		u.Gossiper.SendMessage(msg)
 	}
 }

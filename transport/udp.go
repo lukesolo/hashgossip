@@ -34,6 +34,8 @@ func ServeUDP(conn *net.UDPConn, handler func(*net.UDPAddr, int, []byte)) {
 			continue
 		}
 
+		// обработка входящих сообщений происходит в одной горутине,
+		// что может привести к тому пир некоторе время не сможет принимать новые сообщения
 		handler(src, n, buf)
 	}
 }
@@ -51,6 +53,7 @@ func ServeMulticastUDP(address string, handler func(*net.UDPAddr, int, []byte)) 
 		if err != nil {
 			log.Println("ReadFromUDP failed:", err)
 		}
+		// здесь тоже обработка в той же горутине
 		handler(src, n, buf)
 	}
 }

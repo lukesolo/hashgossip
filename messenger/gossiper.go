@@ -44,6 +44,9 @@ func (g *gossiper) SendMessage(msg models.Message) error {
 	if err != nil {
 		return err
 	}
+	// если буфер канала заполнится и горутина заблокируется,
+	// то узел не сможет отвечать из-за того,
+	// что обработка входящих сообщений выполняется в одной горутине
 	g.ch <- mb
 	return nil
 }
